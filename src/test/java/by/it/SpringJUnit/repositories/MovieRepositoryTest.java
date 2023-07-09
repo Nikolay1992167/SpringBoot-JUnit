@@ -2,6 +2,7 @@ package by.it.SpringJUnit.repositories;
 
 import by.it.SpringJUnit.model.Movie;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +21,25 @@ public class MovieRepositoryTest {
     @Autowired
     private MovieRepository movieRepository;
 
-    @Test
-    @DisplayName("It should save the movie to the database")
-    void save() {
-        //Arrange
-        Movie avatarMovie = new Movie();
+    private Movie avatarMovie;
+    private Movie titanicMovie;
+
+    @BeforeEach
+    void init() {
+        avatarMovie = new Movie();
         avatarMovie.setName("Avatar");
         avatarMovie.setGenera("Action");
         avatarMovie.setReleaseDate(LocalDate.of(2000, Month.APRIL, 22));
+
+        titanicMovie = new Movie();
+        avatarMovie.setName("Titanic");
+        avatarMovie.setGenera("Romans");
+        avatarMovie.setReleaseDate(LocalDate.of(1999, Month.MAY, 20));
+    }
+
+    @Test
+    @DisplayName("It should save the movie to the database")
+    void save() {
         //Act
         Movie newMovie = movieRepository.save(avatarMovie);
         //Assert
@@ -38,16 +50,7 @@ public class MovieRepositoryTest {
     @Test
     @DisplayName("It should return the movies list with size of 2")
     void getAllMovies() {
-        Movie avatarMovie = new Movie();
-        avatarMovie.setName("Avatar");
-        avatarMovie.setGenera("Action");
-        avatarMovie.setReleaseDate(LocalDate.of(2000, Month.APRIL, 22));
         movieRepository.save(avatarMovie);
-
-        Movie titanicMovie = new Movie();
-        avatarMovie.setName("Titanic");
-        avatarMovie.setGenera("Romans");
-        avatarMovie.setReleaseDate(LocalDate.of(1999, Month.MAY, 20));
         movieRepository.save(titanicMovie);
 
         List<Movie> list = movieRepository.findAll();
@@ -59,11 +62,7 @@ public class MovieRepositoryTest {
     @Test
     @DisplayName("It should return the movie by its id")
     void getMovieById() {
-        Movie avatarMovie = new Movie();
-        avatarMovie.setName("Avatar");
-        avatarMovie.setGenera("Action");
-        avatarMovie.setReleaseDate(LocalDate.of(2000, Month.APRIL, 22));
-        movieRepository.save(avatarMovie);
+       movieRepository.save(avatarMovie);
 
         Movie excitingMovie = movieRepository.findById(avatarMovie.getId()).get();
 
@@ -74,12 +73,8 @@ public class MovieRepositoryTest {
 
     @Test
     @DisplayName("It should update the movie with genera FANTASY")
-    void updateMovie(){
-        Movie avatarMovie = new Movie();
-        avatarMovie.setName("Avatar");
-        avatarMovie.setGenera("Action");
-        avatarMovie.setReleaseDate(LocalDate.of(2000, Month.APRIL, 22));
-        movieRepository.save(avatarMovie);
+    void updateMovie() {
+       movieRepository.save(avatarMovie);
 
         Movie excitingMovie = movieRepository.findById(avatarMovie.getId()).get();
         excitingMovie.setGenera("FANTASY");
@@ -91,42 +86,25 @@ public class MovieRepositoryTest {
 
     @Test
     @DisplayName("It should delete the existing movie")
-    void deleteMovie(){
-        Movie avatarMovie = new Movie();
-        avatarMovie.setName("Avatar");
-        avatarMovie.setGenera("Action");
-        avatarMovie.setReleaseDate(LocalDate.of(2000, Month.APRIL, 22));
+    void deleteMovie() {
         movieRepository.save(avatarMovie);
         Long id = avatarMovie.getId();
-
-        Movie titanicMovie = new Movie();
-        avatarMovie.setName("Titanic");
-        avatarMovie.setGenera("Romans");
-        avatarMovie.setReleaseDate(LocalDate.of(1999, Month.MAY, 20));
-        movieRepository.save(titanicMovie);
+       movieRepository.save(titanicMovie);
 
         movieRepository.delete(avatarMovie);
         Optional<Movie> exitingMovie = movieRepository.findById(id);
         List<Movie> list = movieRepository.findAll();
-        Assertions.assertEquals(1,list.size());
+        Assertions.assertEquals(1, list.size());
         assertThat(exitingMovie).isEmpty();
     }
 
     @Test
     @DisplayName("It should return the movies list with genera ROMANCE")
-    void getMovieByGenera(){
-        Movie avatarMovie = new Movie();
-        avatarMovie.setName("Avatar");
-        avatarMovie.setGenera("Action");
-        avatarMovie.setReleaseDate(LocalDate.of(2000, Month.APRIL, 22));
-        movieRepository.save(avatarMovie);
+    void getMovieByGenera() {
+       movieRepository.save(avatarMovie);
         Long id = avatarMovie.getId();
 
-        Movie titanicMovie = new Movie();
-        avatarMovie.setName("Titanic");
-        avatarMovie.setGenera("Romans");
-        avatarMovie.setReleaseDate(LocalDate.of(1999, Month.MAY, 20));
-        movieRepository.save(titanicMovie);
+       movieRepository.save(titanicMovie);
 
         List<Movie> list = movieRepository.findByGenera("Romance");
 

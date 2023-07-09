@@ -22,7 +22,7 @@ public class MovieService {
     }
 
     public Movie getMovieById(Long id){
-        return movieRepository.findById(id).orElseThrow(()->new RuntimeException("Movie not found with id"));
+        return movieRepository.findById(id).orElseThrow(()->new RuntimeException("Movie not found with id"+id));
     }
 
     public Movie updateMovie(Movie movie, Long id){
@@ -34,6 +34,7 @@ public class MovieService {
     }
 
     public void deleteMovie(Long id){
-        movieRepository.deleteById(id);
+        Movie existingMovie = movieRepository.findById(id).get();
+        movieRepository.delete(existingMovie);
     }
 }

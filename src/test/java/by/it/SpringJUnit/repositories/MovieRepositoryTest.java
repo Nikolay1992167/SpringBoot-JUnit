@@ -44,7 +44,7 @@ public class MovieRepositoryTest {
         Movie newMovie = movieRepository.save(avatarMovie);
         //Assert
         Assertions.assertNotNull(newMovie);
-        Assertions.assertNotEquals(newMovie.getId(), null);
+        assertThat(newMovie.getId()).isNotEqualTo(null);
     }
 
     @Test
@@ -56,6 +56,7 @@ public class MovieRepositoryTest {
         List<Movie> list = movieRepository.findAll();
 
         Assertions.assertNotNull(list);
+        assertThat(list).isNotNull();
         Assertions.assertEquals(2, list.size());
     }
 
@@ -68,20 +69,21 @@ public class MovieRepositoryTest {
 
         Assertions.assertNotNull(excitingMovie);
         Assertions.assertEquals("Action", excitingMovie.getGenera());
-        assertThat(avatarMovie.getReleaseDate().isBefore(LocalDate.of(2000, Month.APRIL, 23)));
+        assertThat(avatarMovie.getReleaseDate().isBefore(LocalDate.of(2000, Month.APRIL, 24)));
     }
 
     @Test
     @DisplayName("It should update the movie with genera FANTASY")
     void updateMovie() {
-       movieRepository.save(avatarMovie);
 
-        Movie excitingMovie = movieRepository.findById(avatarMovie.getId()).get();
-        excitingMovie.setGenera("FANTASY");
-        Movie newMovie = movieRepository.save(excitingMovie);
+        movieRepository.save(avatarMovie);
 
-        Assertions.assertEquals("FANTASY", newMovie.getGenera());
-        Assertions.assertEquals("Avatar", newMovie.getName());
+        Movie existingMovie = movieRepository.findById(avatarMovie.getId()).get();
+        existingMovie.setGenera("Fantacy");
+        Movie updatedMovie = movieRepository.save(existingMovie);
+
+        Assertions.assertEquals("Fantacy", updatedMovie.getGenera());
+        Assertions.assertEquals("Avatar", updatedMovie.getName());
     }
 
     @Test

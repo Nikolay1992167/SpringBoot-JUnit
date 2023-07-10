@@ -1,0 +1,115 @@
+package by.it.SpringJUnit.integration;
+
+import by.it.SpringJUnit.model.Movie;
+import by.it.SpringJUnit.repositories.MovieRepository;
+import org.junit.Before;
+import org.junit.jupiter.api.*;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.List;
+
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class MovieIntegrationTest {
+    @LocalServerPort
+    private int port;
+
+    private String baseUrl = "http://localhost";
+
+    private static RestTemplate restTemplate;
+
+    private Movie avatarMovie;
+    private Movie titanicMovie;
+
+    @Autowired
+    private MovieRepository movieRepository;
+
+    @BeforeAll
+    public static void init() {
+        restTemplate = new RestTemplate();
+    }
+
+    @BeforeEach
+    public void beforeSetup() {
+        baseUrl = baseUrl + ":" + port + "/movies";
+
+        avatarMovie = new Movie();
+        avatarMovie.setName("Avatar");
+        avatarMovie.setGenera("Action");
+        avatarMovie.setReleaseDate(LocalDate.of(2000, Month.APRIL, 23));
+
+        titanicMovie = new Movie();
+        titanicMovie.setName("Titanic");
+        titanicMovie.setGenera("Romance");
+        titanicMovie.setReleaseDate(LocalDate.of(2004, Month.JANUARY, 10));
+
+        avatarMovie = movieRepository.save(avatarMovie);
+        titanicMovie = movieRepository.save(titanicMovie);
+    }
+
+    @AfterEach
+    public void afterSetup() {
+        movieRepository.deleteAll();
+    }
+
+    @Test
+    void shouldCreateMovieTest() {
+        Movie hangoverMovie = new Movie();
+        hangoverMovie.setId(1L);
+        hangoverMovie.setName("Hangover");
+        hangoverMovie.setGenera("Comedy");
+        hangoverMovie.setReleaseDate(LocalDate.of(2004, Month.DECEMBER, 31));
+
+        Movie newMovie = restTemplate.postForObject(baseUrl, hangoverMovie, Movie.class);
+
+        Assertions.assertNotNull(newMovie);
+        assertThat(newMovie.getId()).isNotNull();
+    }
+
+    @Test
+    void shouldFetchMoviesTest() {
+
+        List<Movie> list = restTemplate.getForObject(baseUrl, List.class);
+
+        assertThat(list.size()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldFetchOneMovieByIdTest() {
+
+        Movie existingMovie = restTemplate.getForObject(baseUrl+"/"+avatarMovie.getId(), Movie.class);
+
+        Assertions.assertNotNull(existingMovie);
+        Assertions.assertEquals("Avatar", existingMovie.getName());
+    }
+
+    @Test
+    void shouldDeleteMovieTest() {
+
+        restTemplate.delete(baseUrl+"/"+avatarMovie.getId());
+
+        int count = movieRepository.findAll().size();
+
+        Assertions.assertEquals(1, count);
+    }
+
+    @Test
+    void shouldUpdateMovieTest() {
+
+        avatarMovie.setGenera("Fantacy");
+
+        restTemplate.put(baseUrl+"/{id}", avatarMovie, avatarMovie.getId());
+
+        Movie existingMovie = restTemplate.getForObject(baseUrl+"/"+avatarMovie.getId(), Movie.class);
+
+        Assertions.assertNotNull(existingMovie);
+        Assertions.assertEquals("Fantacy", existingMovie.getGenera());
+    }
+}
